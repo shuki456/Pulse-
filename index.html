@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pulse+++ Social</title>
+
+  <!-- INLINE SVG FAVICON (no files needed) -->
+  <link rel="icon" type="image/svg+xml"
+        href='data:image/svg+xml;utf8,
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="%237c5cff"/>
+              <stop offset="1" stop-color="%234fd1c5"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" fill="%230b1020"/>
+          <circle cx="32" cy="32" r="20" fill="url(%23g)"/>
+          <path d="M16 34 L26 34 L30 26 L34 40 L38 30 L48 30"
+                fill="none" stroke="white" stroke-width="4"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>'>
+
+  <style>
+    :root{
+      --bg:#0b1020; --bg2:#0f1730; --panel:#131c39; --panel2:#0e1633;
+      --text:#e8edff; --muted:#9db0e3; --brand:#7c5cff; --brand2:#4fd1c5;
+      --good:#2bd576; --bad:#ff6b6b; --warn:#ffb84d; --ring:rgba(124,92,255,.35);
+      --radius:18px; --shadow:0 10px 30px rgba(0,0,0,.35);
+      --post-gap:10px; --tick:#5aa9ff;
+    }
+    html[data-theme="light"]{
+      --bg:#eef2ff; --bg2:#e9eeff; --panel:#ffffff; --panel2:#f6f8ff;
+      --text:#0c1224; --muted:#5b6b95; --brand:#5b4bff; --brand2:#07a89d;
+      --ring:rgba(91,75,255,.25); --shadow:0 8px 20px rgba(8,14,40,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1200px 800px at 20% -10%, #1a2350 0%, transparent 60%),
+        radial-gradient(900px 700px at 120% 0%, #1b1e4e 0%, transparent 55%),
+        var(--bg);
+      color:var(--text); min-height:100vh;
+    }
+    a{color:inherit;text-decoration:none}
+    .hidden{display:none !important}
+    .muted{color:var(--muted)}
+    .tiny{font-size:12px}
+    .pill{
+      font-size:11px; padding:2px 6px; border-radius:999px; background:var(--panel2);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    header.topbar{
+      position:sticky; top:0; z-index:10;
+      display:grid; grid-template-columns:1fr minmax(260px,540px) 1fr;
+      gap:10px; align-items:center;
+      padding:10px 14px;
+      background:linear-gradient(90deg, var(--bg) 0%, var(--bg2) 100%);
+      border-bottom:1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(6px);
+    }
+    .topbar-left, .topbar-right{display:flex; align-items:center; gap:10px;}
+    .topbar-right{justify-content:flex-end;}
+
+    .logo{display:flex; align-items:center; gap:8px; font-weight:900; letter-spacing:.5px;}
+    .logo svg{
+      height:36px; width:36px; border-radius:8px;
+      box-shadow:0 0 16px var(--ring);
+      background:#0b1020;
+    }
+
+    .topnav{display:flex; gap:6px; flex-wrap:wrap;}
+    .navbtn{
+      background:transparent; border:1px solid transparent; color:var(--muted);
+      padding:7px 10px; border-radius:10px; cursor:pointer; font-weight:800;
+    }
+    .navbtn.active,.navbtn:hover{
+      background:var(--panel2); color:var(--text);
+      border-color:rgba(255,255,255,.08);
+    }
+
+    .searchbar{
+      width:100%; display:flex; align-items:center; gap:6px;
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      padding:7px 10px;
+      border-radius:999px; box-shadow:var(--shadow);
+    }
+    .searchbar input{
+      flex:1; background:transparent; border:0; outline:none; color:var(--text);
+      font-size:14px;
+    }
+
+    .btn{
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:8px 12px; border-radius:12px; cursor:pointer; font-weight:800;
+      transition:.12s transform,.12s opacity;
+    }
+    .btn:hover{transform:translateY(-1px); opacity:.95;}
+    .btn.brand{background:linear-gradient(90deg,var(--brand),#9b7bff); border-color:transparent}
+    .btn.good{background:rgba(43,213,118,.12); border-color:rgba(43,213,118,.35)}
+    .btn.bad{background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.35)}
+    .btn.warn{background:rgba(255,184,77,.12); border-color:rgba(255,184,77,.35)}
+    .ghost{
+      background:transparent; border:1px solid rgba(255,255,255,.08); color:var(--muted);
+      padding:7px 10px; border-radius:10px; cursor:pointer; font-weight:800;
+    }
+    .ghost:hover{color:var(--text); background:var(--panel2);}
+    .mini{padding:6px 8px; border-radius:10px; font-size:12px;}
+    .w100{width:100%;}
+
+    input, select, textarea{
+      width:100%; background:var(--panel2); color:var(--text);
+      border:1px solid rgba(255,255,255,.08); border-radius:10px;
+      padding:8px 10px; outline:none; font-size:14px;
+    }
+    textarea{min-height:70px; resize:vertical;}
+
+    .layout{
+      display:grid; grid-template-columns:260px minmax(0,1fr) 320px;
+      gap:14px; padding:14px;
+      max-width:1400px; margin:0 auto;
+    }
+    aside.sidebar, main.center{display:flex; flex-direction:column; gap:12px;}
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:var(--radius);
+      padding:12px;
+      box-shadow:var(--shadow);
+    }
+    .divider{height:1px; background:rgba(255,255,255,.08); margin:8px 0;}
+    .row{display:flex; align-items:center; gap:8px}
+    .row-between{display:flex; align-items:center; justify-content:space-between; gap:8px}
+
+    .avatar{
+      width:40px;height:40px;border-radius:50%;
+      background:linear-gradient(135deg,#2b3b77,#0d1b44);
+      display:grid;place-items:center;font-weight:900;color:#fff;
+      border:2px solid rgba(255,255,255,.08);
+      flex:0 0 auto;
+    }
+    .avatar.sm{width:28px;height:28px;font-size:12px}
+    .avatar.lg{width:64px;height:64px;font-size:20px}
+
+    .tick{
+      display:inline-grid; place-items:center;
+      width:16px; height:16px; border-radius:50%;
+      background:var(--tick); color:white; font-size:11px; font-weight:900;
+      margin-left:4px;
+    }
+
+    .me-row{display:flex; gap:10px; align-items:center;}
+    .me-name{font-weight:900; font-size:18px;}
+    .me-handle{color:var(--muted); font-weight:700;}
+    .me-stats{display:flex; gap:10px; margin-top:6px; font-size:12px; color:var(--muted);}
+
+    .composer-head{display:flex; gap:8px;}
+    .composer-tools{
+      display:grid; grid-template-columns:1fr 1fr 160px 160px;
+      gap:8px; margin-top:8px;
+    }
+    .filebtn{
+      display:inline-flex; align-items:center; gap:6px;
+      background:var(--panel2); border:1px dashed rgba(255,255,255,.15);
+      padding:6px 8px; border-radius:10px; cursor:pointer; font-size:12px;
+      color:var(--muted);
+    }
+    .filebtn:hover{color:var(--text)}
+
+    .list{display:flex; flex-direction:column; gap:var(--post-gap);}
+    .post{display:flex; gap:10px;}
+    .post-body{flex:1; min-width:0;}
+    .post-meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+    .post-author{font-weight:900; cursor:pointer;}
+    .post-handle, .post-time{color:var(--muted); font-size:12px;}
+    .post-text{white-space:pre-wrap; line-height:1.4; margin:6px 0;}
+    .post-img{
+      max-width:100%;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      margin-top:4px;
+    }
+    .video{
+      margin-top:6px; border-radius:14px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.08); background:black;
+    }
+    .video iframe{width:100%; height:320px; border:0;}
+    .video video{width:100%; height:auto; display:block;}
+
+    .quote{
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:8px; margin-top:6px;
+      font-size:14px;
+    }
+
+    .tags{display:flex; gap:6px; flex-wrap:wrap;}
+    .tag{
+      font-size:12px; color:var(--brand2);
+      background:rgba(79,209,197,.12);
+      border:1px dashed rgba(79,209,197,.5);
+      padding:2px 6px; border-radius:999px; cursor:pointer;
+    }
+
+    .post-actions{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;}
+    .action{
+      font-size:13px; color:var(--muted);
+      padding:6px 8px; border-radius:10px; cursor:pointer;
+      border:1px solid transparent; background:transparent;
+    }
+    .action:hover{background:var(--panel2); color:var(--text);}
+    .action.active{
+      color:var(--brand);
+      background:rgba(124,92,255,.12);
+      border-color:rgba(124,92,255,.35);
+    }
+
+    .comments{display:none; margin-top:8px;}
+    .comments.open{display:block;}
+    .comment{display:flex; gap:8px; padding:6px 0; border-top:1px dashed rgba(255,255,255,.08);}
+    .comment:first-child{border-top:0;}
+
+    .trending{display:flex; flex-direction:column; gap:8px;}
+    .trend-item{
+      display:flex; align-items:center; justify-content:space-between;
+      background:var(--panel2); padding:8px; border-radius:12px; cursor:pointer;
+    }
+
+    .dm-layout{
+      display:grid; grid-template-columns:240px 1fr; gap:10px;
+    }
+    .thread{
+      padding:8px; border-radius:10px; cursor:pointer; background:var(--panel2);
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .thread.active{outline:2px solid var(--ring)}
+    .chatbox{
+      height:360px; overflow:auto; background:var(--panel2);
+      border-radius:12px; padding:8px;
+    }
+    .bubble{
+      max-width:75%; padding:8px 10px; margin:6px 0; border-radius:12px; font-size:14px;
+      background:rgba(255,255,255,.06);
+    }
+    .bubble.me{
+      margin-left:auto; background:rgba(124,92,255,.18);
+      border:1px solid rgba(124,92,255,.35)
+    }
+
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      display:grid; place-items:center; z-index:100;
+    }
+    .modal{
+      width:min(560px,94vw); background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; padding:14px; box-shadow:var(--shadow);
+    }
+    .tab-row{display:flex; gap:6px; margin:8px 0;}
+    .tab{
+      flex:1; padding:8px; border-radius:10px; font-weight:800;
+      background:var(--panel2); border:1px solid rgba(255,255,255,.08); color:var(--muted);
+      cursor:pointer;
+    }
+    .tab.active{
+      background:linear-gradient(90deg,var(--brand),#9b7bff);
+      color:white; border-color:transparent;
+    }
+    .tab-content{display:flex; flex-direction:column; gap:6px;}
+
+    .toast{
+      position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
+      background:var(--panel); border:1px solid rgba(255,255,255,.1);
+      padding:10px 12px; border-radius:12px; box-shadow:var(--shadow);
+      display:none; z-index:999;
+    }
+    .toast.show{display:block;}
+
+    @media (max-width: 980px){
+      .layout{grid-template-columns:230px minmax(0,1fr);}
+      aside.right{display:none;}
+      .composer-tools{grid-template-columns:1fr 1fr 150px 150px;}
+      .dm-layout{grid-template-columns:1fr;}
+    }
+    @media (max-width: 720px){
+      .layout{grid-template-columns:1fr;}
+      aside.left{order:2;}
+      main.center{order:1;}
+      header.topbar{grid-template-columns:1fr; position:static;}
+      .composer-tools{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <!-- INLINE SVG LOGO -->
+        <svg viewBox="0 0 64 64" aria-label="Pulse logo">
+          <defs>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#7c5cff"/>
+              <stop offset="1" stop-color="#4fd1c5"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" fill="#0b1020"/>
+          <circle cx="32" cy="32" r="20" fill="url(#g2)"/>
+          <path d="M16 34 L26 34 L30 26 L34 40 L38 30 L48 30"
+                fill="none" stroke="white" stroke-width="4"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Pulse+++ </span>
+      </div>
+
+      <nav class="topnav">
+        <button class="navbtn active" data-view="feed">Feed</button>
+        <button class="navbtn" data-view="explore">Explore</button>
+        <button class="navbtn" data-view="hashtags">#Tags</button>
+        <button class="navbtn" data-view="messages">Messages</button>
+        <button class="navbtn" data-view="notifications">Notifications</button>
+        <button class="navbtn" data-view="people">People</button>
+        <button class="navbtn" data-view="saved">Saved</button>
+        <button class="navbtn" data-view="profile">Profile</button>
+        <button class="navbtn hidden" data-view="admin" id="adminNav">Admin</button>
+      </nav>
+    </div>
+
+    <div class="topbar-center">
+      <div class="searchbar">
+        <span>🔎</span>
+        <input id="globalSearch" placeholder="Search posts, users, #tags..." />
+        <button id="clearSearch" class="ghost mini">Clear</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button id="themeToggle" class="ghost">🌙</button>
+      <button id="openSettings" class="ghost">⚙️</button>
+      <button id="logoutBtn" class="btn">Log out</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="layout">
+    <!-- LEFT -->
+    <aside class="sidebar left">
+      <section class="card">
+        <div class="me-row">
+          <div class="avatar lg" id="meAvatar">U</div>
+          <div>
+            <div class="me-name" id="meName">User</div>
+            <div class="me-handle" id="meHandle">@user</div>
+            <div class="me-stats">
+              <div><span id="mePosts">0</span> Posts</div>
+              <div><span id="meFollowers">0</span> Followers</div>
+              <div><span id="meFollowing">0</span> Following</div>
+            </div>
+            <div class="tiny muted" id="meRole"></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <button id="editProfileBtn" class="btn brand w100">Edit profile</button>
+      </section>
+
+      <section class="card">
+        <div class="row-between">
+          <div style="font-weight:900;">Trending</div>
+          <div class="tiny muted">today</div>
+        </div>
+        <div id="trendingList" class="trending"></div>
+      </section>
+    </aside>
+
+    <!-- CENTER -->
+    <main class="center">
+      <!-- COMPOSER -->
+      <section class="card composer">
+        <div class="composer-head">
+          <div class="avatar" id="composerAvatar">U</div>
+          <textarea id="postText" placeholder="Post something... Use #tags and @mentions"></textarea>
+        </div>
+
+        <div class="composer-tools">
+          <input id="imageUrl" placeholder="Image URL (optional)" />
+          <input id="videoUrl" placeholder="YouTube or .mp4/.webm video link (optional)" />
+          <select id="visibility">
+            <option value="public">Public</option>
+            <option value="followers">Followers only</option>
+            <option value="private">Only me</option>
+          </select>
+          <select id="mood">
+            <option value="">Mood (optional)</option>
+            <option value="happy">😊 Happy</option>
+            <option value="sad">😔 Sad</option>
+            <option value="hyped">🔥 Hyped</option>
+            <option value="chill">😎 Chill</option>
+          </select>
+        </div>
+
+        <div class="row" style="margin-top:8px; justify-content:space-between;">
+          <label class="filebtn">
+            📷 Upload image
+            <input id="imageFile" type="file" accept="image/*" class="hidden">
+          </label>
+          <div class="tiny muted" id="charCount">0/280</div>
+          <div class="row">
+            <button id="postBtn" class="btn brand">Post</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEED -->
+      <section class="card view" id="feedView">
+        <div class="row-between">
+          <div style="font-weight:900;">Feed</div>
+          <select id="sortFeed" class="mini">
+            <option value="new">Newest</option>
+            <option value="top">Top liked</option>
+            <option value="following">Following</option>
+            <option value="mine">Only mine</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <div id="feedList" class="list"></div>
+      </section>
+
+      <!-- EXPLORE -->
+      <section class="card view hidden" id="exploreView">
+        <div class="row-between">
+          <div style="font-weight:900;">Explore (Public)</div>
+          <button id="refreshExplore" class="ghost mini">🔄 refresh</button>
+        </div>
+        <div class="divider"></div>
+        <div id="exploreList" class="list"></div>
+      </section>
+
+      <!-- TAGS -->
+      <section class="card view hidden" id="hashtagsView">
+        <div class="row-between">
+          <div style="font-weight:900;">Hashtags</div>
+          <input id="tagSearch" class="mini" style="width:220px" placeholder="#search tag"/>
+        </div>
+        <div class="divider"></div>
+        <div id="tagsList" class="list"></div>
+      </section>
+
+      <!-- PEOPLE -->
+      <section class="card view hidden" id="peopleView">
+        <div class="row-between">
+          <div style="font-weight:900;">People</div>
+          <input id="peopleSearch" class="mini" placeholder="Search users..." style="width:220px;" />
+        </div>
+        <div class="divider"></div>
+        <div id="peopleList" class="list"></div>
+      </section>
+
+      <!-- SAVED -->
+      <section class="card view hidden" id="savedView">
+        <div style="font-weight:900;">Saved posts</div>
+        <div class="divider"></div>
+        <div id="savedList" class="list"></div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="card view hidden" id="profileView">
+        <div id="profileHeader"></div>
+        <div class="divider"></div>
+        <div id="profilePostsList" class="list"></div>
+      </section>
+
+      <!-- MESSAGES -->
+      <section class="card view hidden" id="messagesView">
+        <div class="row-between">
+          <div style="font-weight:900;">Messages</div>
+          <div class="row">
+            <button id="newDmBtn" class="ghost mini">+ New DM</button>
+            <button id="newGroupBtn" class="ghost mini">+ New Group</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="dm-layout">
+          <div id="threadsList" class="list"></div>
+          <div>
+            <div id="chatHeader" class="row-between tiny muted">No chat selected</div>
+            <div id="chatBox" class="chatbox"></div>
+            <div class="row" style="margin-top:8px;">
+              <input id="chatInput" placeholder="Type message..." />
+              <button id="sendChatBtn" class="btn mini">Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section class="card view hidden" id="notificationsView">
+        <div class="row-between">
+          <div style="font-weight:900;">Notifications</div>
+          <button id="markAllRead" class="ghost mini">Mark all read</button>
+        </div>
+        <div class="divider"></div>
+        <div id="notifList" class="list"></div>
+      </section>
+
+      <!-- ADMIN -->
+      <section class="card view hidden" id="adminView">
+        <div class="row-between">
+          <div style="font-weight:900;">Admin Panel (Only You)</div>
+          <button id="broadcastBtn" class="btn warn mini">📣 Broadcast</button>
+        </div>
+        <div class="divider"></div>
+
+        <div style="font-weight:900;margin:6px 0;">Users</div>
+        <div id="adminUsers" class="list"></div>
+
+        <div class="divider"></div>
+
+        <div style="font-weight:900;margin:6px 0;">All Posts</div>
+        <div id="adminPosts" class="list"></div>
+      </section>
+    </main>
+
+    <aside class="sidebar right">
+      <section class="card">
+        <div style="font-weight:900; margin-bottom:6px;">Who to follow</div>
+        <div id="suggestList" class="list"></div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-backdrop" id="authBackdrop">
+    <div class="modal">
+      <h2 style="margin:0 0 6px">Welcome to Pulse+++</h2>
+      <div class="muted tiny">Local demo social media</div>
+
+      <div class="tab-row">
+        <button class="tab active" data-tab="login">Login</button>
+        <button class="tab" data-tab="signup">Sign up</button>
+      </div>
+
+      <div class="tab-content" id="loginTab">
+        <label class="tiny muted">Username</label>
+        <input id="loginUser" placeholder="e.g. alex"/>
+        <label class="tiny muted">Password</label>
+        <input id="loginPass" type="password" placeholder="••••••"/>
+        <button id="loginBtn" class="btn brand w100">Login</button>
+      </div>
+
+      <div class="tab-content hidden" id="signupTab">
+        <label class="tiny muted">Display name</label>
+        <input id="signupName" placeholder="Your name"/>
+        <label class="tiny muted">Username (unique)</label>
+        <input id="signupUser" placeholder="no spaces"/>
+        <label class="tiny muted">Password</label>
+        <input id="signupPass" type="password" placeholder="min 4 chars"/>
+        <label class="tiny muted">Bio (optional)</label>
+        <input id="signupBio" placeholder="Short bio"/>
+        <button id="signupBtn" class="btn brand w100">Create account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop hidden" id="settingsBackdrop">
+    <div class="modal">
+      <h3 style="margin:0 0 6px">Settings</h3>
+      <div class="divider"></div>
+
+      <label class="tiny muted">Feed density</label>
+      <select id="settingDensity">
+        <option value="comfortable">Comfortable</option>
+        <option value="compact">Compact</option>
+      </select>
+
+      <div class="divider"></div>
+      <div class="row-between">
+        <button id="resetApp" class="btn bad">Reset app</button>
+        <button id="closeSettings" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT POST MODAL -->
+  <div class="modal-backdrop hidden" id="editBackdrop">
+    <div class="modal">
+      <h3 style="margin:0 0 6px">Edit post</h3>
+      <textarea id="editText"></textarea>
+      <input id="editImageUrl" placeholder="Image URL (optional)"/>
+      <input id="editVideoUrl" placeholder="Video URL (optional)"/>
+      <div class="row-between" style="margin-top:8px;">
+        <button id="cancelEdit" class="btn">Cancel</button>
+        <button id="saveEdit" class="btn brand">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUOTE MODAL -->
+  <div class="modal-backdrop hidden" id="quoteBackdrop">
+    <div class="modal">
+      <h3 style="margin:0 0 6px">Quote repost</h3>
+      <textarea id="quoteText" placeholder="Say something..."></textarea>
+      <div class="divider"></div>
+      <div id="quoteOriginal" class="quote"></div>
+      <div class="row-between" style="margin-top:8px;">
+        <button id="cancelQuote" class="btn">Cancel</button>
+        <button id="doQuote" class="btn brand">Repost</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ===========================================================
+   Pulse+++ Social (Local Demo)
+=========================================================== */
+
+/* ===== Utils / store ===== */
+const store = {
+  load(k, fallback){
+    try { return JSON.parse(localStorage.getItem(k)) ?? fallback; }
+    catch { return fallback; }
+  },
+  save(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+const timeAgo = ts => {
+  const sec = Math.floor((Date.now()-ts)/1000);
+  if(sec<60) return sec+"s ago";
+  const min=Math.floor(sec/60); if(min<60) return min+"m ago";
+  const hr=Math.floor(min/60); if(hr<24) return hr+"h ago";
+  return Math.floor(hr/24)+"d ago";
+};
+const initials = name => name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+const tagsFrom = text => (text.match(/#\w+/g)||[]).map(t=>t.toLowerCase());
+const mentionsFrom = text => (text.match(/@\w+/g)||[]).map(t=>t.toLowerCase());
+const escapeHtml = s => (s||"").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+/* YouTube parser */
+function youtubeId(url){
+  if(!url) return null;
+  const m1=url.match(/v=([a-zA-Z0-9_-]{6,})/);
+  const m2=url.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
+  const m3=url.match(/embed\/([a-zA-Z0-9_-]{6,})/);
+  return (m1&&m1[1])||(m2&&m2[1])||(m3&&m3[1])||null;
+}
+function isVideoFile(url){
+  return /\.(mp4|webm|ogg)$/i.test(url||"");
+}
+
+/* ===== Keys ===== */
+const KEYS = {
+  users:"pulseppp_users",
+  posts:"pulseppp_posts",
+  session:"pulseppp_session",
+  theme:"pulseppp_theme",
+  settings:"pulseppp_settings",
+  dms:"pulseppp_dms"
+};
+
+/* ===== State ===== */
+let users   = store.load(KEYS.users, []);
+let posts   = store.load(KEYS.posts, []);
+let session = store.load(KEYS.session, null);
+let theme   = store.load(KEYS.theme, "dark");
+let settings= store.load(KEYS.settings, { density:"comfortable" });
+let dms     = store.load(KEYS.dms, []);
+
+let view="feed";
+let viewedUserId=null;
+let searchQuery="";
+let sortMode="new";
+let editingPostId=null;
+let quotingPostId=null;
+let activeThreadId=null;
+
+/* ===== Persist ===== */
+function persist(){
+  store.save(KEYS.users, users);
+  store.save(KEYS.posts, posts);
+  store.save(KEYS.session, session);
+  store.save(KEYS.theme, theme);
+  store.save(KEYS.settings, settings);
+  store.save(KEYS.dms, dms);
+}
+
+/* ===== Toast ===== */
+function toast(msg){
+  const t=$("#toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),1600);
+}
+
+/* ===== Auth ===== */
+function currentUser(){
+  return users.find(u=>u.id===session?.userId) || null;
+}
+function showAuth(show){ $("#authBackdrop").classList.toggle("hidden", !show); }
+
+function login(username, password){
+  const u = users.find(x=>x.username===username.toLowerCase());
+  if(!u || u.password!==password) return false;
+  if(u.banned) return "banned";
+  session={userId:u.id}; persist(); return true;
+}
+function signup(name, username, password, bio){
+  username=username.toLowerCase().trim();
+  if(!username || username.includes(" ")) return "Invalid username.";
+  if(users.some(u=>u.username===username)) return "Username taken.";
+  if(password.length<4) return "Password too short.";
+
+  const isFirst = users.length===0; // first user becomes admin
+  const u={
+    id:uid(), name:name.trim()||username, username, password,
+    bio:bio?.trim()||"",
+    followers:[], following:[],
+    createdAt:Date.now(),
+    notifications:[],
+    verified:isFirst,
+    isAdmin:isFirst,
+    banned:false
+  };
+  users.push(u); persist(); return u;
+}
+
+/* ===== Notifications ===== */
+function notify(userId, type, payload){
+  const u=users.find(x=>x.id===userId);
+  if(!u || u.banned) return;
+  u.notifications = u.notifications || [];
+  u.notifications.unshift({
+    id:uid(), type, payload,
+    createdAt:Date.now(), read:false
+  });
+}
+
+/* ===== Visibility ===== */
+function canSeePost(p, viewerId){
+  if(p.visibility==="public") return true;
+  if(p.visibility==="private") return p.authorId===viewerId;
+  const author = users.find(u=>u.id===p.authorId);
+  return p.authorId===viewerId || author?.followers.includes(viewerId);
+}
+
+/* ===== Posts ===== */
+function createPost({text, imageUrl, videoUrl, visibility, mood, quoteOf=null, repostOf=null}){
+  const me=currentUser();
+  if(me.banned) return "You are banned.";
+
+  const t=(text||"").trim();
+  const img=(imageUrl||"").trim();
+  const vid=(videoUrl||"").trim();
+
+  if(!t && !img && !vid && !quoteOf && !repostOf) return "Write something first.";
+  if(t.length>280) return "Too long (280).";
+
+  const p={
+    id:uid(), authorId:me.id, text:t,
+    imageUrl:img, videoUrl:vid,
+    visibility, mood,
+    tags:tagsFrom(t),
+    mentions:mentionsFrom(t),
+    likes:[], savedBy:[], comments:[],
+    quoteOf, repostOf,
+    createdAt:Date.now(), editedAt:null
+  };
+  posts.unshift(p);
+
+  // mention notifications
+  p.mentions.forEach(m=>{
+    const uname=m.slice(1);
+    const u=users.find(x=>x.username===uname);
+    if(u) notify(u.id,"mention",{postId:p.id, by:me.id});
+  });
+
+  persist(); return p;
+}
+
+function toggleLike(postId){
+  const me=currentUser();
+  const p=posts.find(x=>x.id===postId); if(!p) return;
+  const i=p.likes.indexOf(me.id);
+  if(i>=0){ p.likes.splice(i,1); }
+  else{
+    p.likes.push(me.id);
+    if(p.authorId!==me.id) notify(p.authorId,"like",{postId, by:me.id});
+  }
+  persist(); renderAll();
+}
+function toggleSave(postId){
+  const me=currentUser();
+  const p=posts.find(x=>x.id===postId); if(!p) return;
+  const i=p.savedBy.indexOf(me.id);
+  if(i>=0) p.savedBy.splice(i,1);
+  else p.savedBy.push(me.id);
+  persist(); renderAll();
+}
+function addComment(postId, val){
+  const me=currentUser();
+  if(me.banned) return toast("You are banned.");
+  const p=posts.find(x=>x.id===postId); if(!p) return;
+  const c=(val||"").trim(); if(!c) return;
+  p.comments.push({id:uid(), authorId:me.id, text:c, createdAt:Date.now()});
+  if(p.authorId!==me.id) notify(p.authorId,"comment",{postId, by:me.id, text:c});
+  persist(); renderAll();
+}
+function deletePost(postId){
+  const me=currentUser();
+  const isMine = posts.some(p=>p.id===postId && p.authorId===me.id);
+  if(isMine || me.isAdmin){
+    posts = posts.filter(p=>p.id!==postId);
+    persist(); renderAll(); toast("Deleted");
+  }
+}
+function openEdit(postId){
+  const me=currentUser();
+  const p=posts.find(x=>x.id===postId && x.authorId===me.id);
+  if(!p) return;
+  editingPostId=postId;
+  $("#editText").value=p.text;
+  $("#editImageUrl").value=p.imageUrl||"";
+  $("#editVideoUrl").value=p.videoUrl||"";
+  $("#editBackdrop").classList.remove("hidden");
+}
+function saveEdit(){
+  const me=currentUser();
+  const p=posts.find(x=>x.id===editingPostId && x.authorId===me.id);
+  if(!p) return;
+  p.text=$("#editText").value.trim();
+  p.imageUrl=$("#editImageUrl").value.trim();
+  p.videoUrl=$("#editVideoUrl").value.trim();
+  p.tags=tagsFrom(p.text);
+  p.mentions=mentionsFrom(p.text);
+  p.editedAt=Date.now();
+  editingPostId=null;
+  $("#editBackdrop").classList.add("hidden");
+  persist(); renderAll(); toast("Edited!");
+}
+function openQuote(postId){
+  quotingPostId=postId;
+  const original=posts.find(p=>p.id===postId);
+  if(!original) return;
+  const a=users.find(u=>u.id===original.authorId);
+  $("#quoteOriginal").innerHTML=`
+    <div class="tiny muted">Reposting @${a?.username||"user"}</div>
+    <div>${escapeHtml(original.text||"")}</div>
+  `;
+  $("#quoteText").value="";
+  $("#quoteBackdrop").classList.remove("hidden");
+}
+function doQuote(){
+  const original=posts.find(p=>p.id===quotingPostId);
+  if(!original) return;
+  const res=createPost({
+    text:$("#quoteText").value,
+    imageUrl:"",
+    videoUrl:"",
+    visibility:"public",
+    mood:"",
+    quoteOf:original.id
+  });
+  if(typeof res==="string") return toast(res);
+  quotingPostId=null;
+  $("#quoteBackdrop").classList.add("hidden");
+  toast("Quote reposted!");
+  renderAll();
+}
+function repost(postId){
+  const original=posts.find(p=>p.id===postId);
+  if(!original) return;
+  const res=createPost({
+    text:"",
+    imageUrl:"",
+    videoUrl:"",
+    visibility:"public",
+    mood:"",
+    repostOf:original.id
+  });
+  if(typeof res==="string") return toast(res);
+  toast("Reposted!");
+  renderAll();
+}
+
+/* ===== Follow ===== */
+function follow(userId){
+  const me=currentUser();
+  if(me.id===userId) return;
+  const other=users.find(u=>u.id===userId);
+  if(!other) return;
+  if(!me.following.includes(userId)) me.following.push(userId);
+  if(!other.followers.includes(me.id)) other.followers.push(me.id);
+  notify(userId,"follow",{by:me.id});
+  persist(); renderAll();
+}
+function unfollow(userId){
+  const me=currentUser();
+  const other=users.find(u=>u.id===userId);
+  if(!other) return;
+  me.following=me.following.filter(x=>x!==userId);
+  other.followers=other.followers.filter(x=>x!==me.id);
+  persist(); renderAll();
+}
+
+/* ===== Messages / Groups ===== */
+function threadKey(members){
+  return members.slice().sort().join(":");
+}
+function getOrCreateThread(memberIds, name="", isGroup=false){
+  const me=currentUser();
+  const members=[me.id, ...memberIds.filter(x=>x!==me.id)];
+  const k=threadKey(members);
+  let t=dms.find(x=>x.key===k);
+  if(!t){
+    t={ id:uid(), key:k, name:name||"", isGroup, members, messages:[], createdAt:Date.now() };
+    dms.unshift(t); persist();
+  }
+  return t;
+}
+function sendDm(){
+  const me=currentUser();
+  if(me.banned) return toast("You are banned.");
+  const t=dms.find(x=>x.id===activeThreadId);
+  if(!t) return toast("Pick a chat");
+  const text=$("#chatInput").value.trim();
+  if(!text) return;
+  t.messages.push({id:uid(), from:me.id, text, createdAt:Date.now()});
+  $("#chatInput").value="";
+  persist(); renderMessages();
+}
+
+/* ===== Admin tools ===== */
+function adminToggleBan(userId){
+  const me=currentUser();
+  if(!me.isAdmin) return;
+  const u=users.find(x=>x.id===userId);
+  if(!u || u.isAdmin) return;
+  u.banned=!u.banned;
+  persist(); renderAll();
+}
+function adminToggleVerify(userId){
+  const me=currentUser();
+  if(!me.isAdmin) return;
+  const u=users.find(x=>x.id===userId);
+  if(!u) return;
+  u.verified=!u.verified;
+  persist(); renderAll();
+}
+function adminBroadcast(){
+  const me=currentUser();
+  if(!me.isAdmin) return;
+  const msg=prompt("Broadcast message to ALL users:");
+  if(!msg) return;
+  users.forEach(u=>{
+    if(!u.banned){
+      notify(u.id,"broadcast",{text:msg, by:me.id});
+    }
+  });
+  persist(); renderAll(); toast("Broadcast sent");
+}
+
+/* ===== Router ===== */
+function setView(v){
+  view=v;
+  const views=["feed","explore","hashtags","messages","notifications","people","saved","profile","admin"];
+  views.forEach(x=>$("#"+x+"View").classList.toggle("hidden", x!==v));
+  $$(".navbtn").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
+  renderAll();
+}
+
+/* ===== Render ===== */
+function renderVideoEmbed(videoUrl){
+  const yt=youtubeId(videoUrl);
+  if(yt){
+    return `<div class="video"><iframe src="https://www.youtube.com/embed/${yt}" allowfullscreen></iframe></div>`;
+  }
+  if(isVideoFile(videoUrl)){
+    return `<div class="video"><video controls src="${videoUrl}"></video></div>`;
+  }
+  return "";
+}
+
+function renderMe(){
+  const me=currentUser();
+  $("#meAvatar").textContent=initials(me.name);
+  $("#meName").innerHTML=escapeHtml(me.name)+(me.verified?`<span class="tick">✓</span>`:"");
+  $("#meHandle").textContent="@"+me.username;
+  $("#mePosts").textContent=posts.filter(p=>p.authorId===me.id).length;
+  $("#meFollowers").textContent=me.followers.length;
+  $("#meFollowing").textContent=me.following.length;
+  $("#composerAvatar").textContent=initials(me.name);
+  $("#meRole").textContent = me.isAdmin ? "Admin (only you)" : (me.banned ? "Banned" : "");
+  $("#adminNav").classList.toggle("hidden", !me.isAdmin);
+}
+
+function renderTrending(){
+  const freq={};
+  posts.forEach(p=>p.tags.forEach(t=>freq[t]=(freq[t]||0)+1));
+  const items=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const wrap=$("#trendingList");
+  wrap.innerHTML=items.length?"":"<div class='muted tiny'>No tags yet</div>";
+  items.forEach(([tag,count])=>{
+    const d=document.createElement("div");
+    d.className="trend-item";
+    d.innerHTML=`<span class="tag">${tag}</span><span class="tiny muted">${count}</span>`;
+    d.onclick=()=>{ searchQuery=tag; $("#globalSearch").value=tag; setView("feed"); };
+    wrap.appendChild(d);
+  });
+}
+
+function renderPost(p){
+  const me=currentUser();
+  const author=users.find(u=>u.id===p.authorId);
+  if(!author || author.banned) return document.createElement("div");
+
+  const liked=p.likes.includes(me.id);
+  const saved=p.savedBy.includes(me.id);
+
+  const el=document.createElement("div");
+  el.className="post";
+
+  const quoteOf = p.quoteOf ? posts.find(x=>x.id===p.quoteOf) : null;
+  const repostOf= p.repostOf? posts.find(x=>x.id===p.repostOf): null;
+
+  const quoteHtml = quoteOf ? (() => {
+    const qa=users.find(u=>u.id===quoteOf.authorId);
+    return `
+      <div class="quote">
+        <div class="tiny muted">Quoted @${qa?.username||"user"}</div>
+        <div>${escapeHtml(quoteOf.text||"")}</div>
+      </div>
+    `;
+  })() : "";
+
+  const repostHtml = repostOf ? (() => {
+    const ra=users.find(u=>u.id===repostOf.authorId);
+    return `
+      <div class="quote">
+        <div class="tiny muted">Reposted from @${ra?.username||"user"}</div>
+        <div>${escapeHtml(repostOf.text||"")}</div>
+      </div>
+    `;
+  })() : "";
+
+  el.innerHTML=`
+    <div class="avatar">${initials(author.name)}</div>
+    <div class="post-body">
+      <div class="post-meta">
+        <span class="post-author" data-open="${author.id}">
+          ${escapeHtml(author.name)} ${author.verified?`<span class="tick">✓</span>`:""}
+        </span>
+        <span class="post-handle">@${author.username}</span>
+        <span class="post-time">• ${timeAgo(p.createdAt)}</span>
+        <span class="pill">${p.visibility}</span>
+        ${p.mood?`<span class="pill">${p.mood}</span>`:""}
+        ${p.editedAt?`<span class="tiny muted">(edited)</span>`:""}
+        ${(p.authorId===me.id)?`
+          <span style="flex:1"></span>
+          <button class="ghost mini" data-edit="${p.id}">✏ edit</button>
+          <button class="ghost mini" data-del="${p.id}">🗑 delete</button>`:""}
+        ${(me.isAdmin && p.authorId!==me.id)?`
+          <span style="flex:1"></span>
+          <button class="ghost mini" data-del="${p.id}">🗑 admin delete</button>`:""}
+      </div>
+
+      ${repostHtml}
+      ${p.text?`<div class="post-text">${escapeHtml(p.text)}</div>`:""}
+      ${p.imageUrl?`<img class="post-img" src="${p.imageUrl}" onerror="this.remove()">`:""}
+      ${p.videoUrl?renderVideoEmbed(p.videoUrl):""}
+      ${quoteHtml}
+
+      <div class="tags">
+        ${p.tags.map(t=>`<span class="tag" data-tag="${t}">${t}</span>`).join("")}
+      </div>
+
+      <div class="post-actions">
+        <button class="action ${liked?"active":""}" data-like="${p.id}">❤️ ${p.likes.length}</button>
+        <button class="action" data-toggle-comments="${p.id}">💬 ${p.comments.length}</button>
+        <button class="action ${saved?"active":""}" data-save="${p.id}">🔖 ${saved?"Saved":"Save"}</button>
+        <button class="action" data-repost="${p.id}">🔁 Repost</button>
+        <button class="action" data-quote="${p.id}">🗨 Quote</button>
+        <button class="action" data-dm="${author.id}">✉ DM</button>
+      </div>
+
+      <div class="comments" id="comments-${p.id}">
+        <div class="row" style="margin-top:6px;">
+          <input placeholder="Write a comment..." data-comment-input="${p.id}">
+          <button class="btn mini" data-comment-btn="${p.id}">Send</button>
+        </div>
+        <div class="list" style="margin-top:6px;">
+          ${p.comments.map(c=>{
+            const cu=users.find(u=>u.id===c.authorId);
+            if(!cu) return "";
+            return `
+              <div class="comment">
+                <div class="avatar sm">${initials(cu.name)}</div>
+                <div>
+                  <div class="tiny muted">
+                    <b data-open="${cu.id}" style="cursor:pointer">${escapeHtml(cu.name)}${cu.verified?`<span class="tick">✓</span>`:""}</b>
+                    • ${timeAgo(c.createdAt)}
+                  </div>
+                  <div>${escapeHtml(c.text)}</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+
+  el.querySelectorAll("[data-like]").forEach(b=>b.onclick=()=>toggleLike(b.dataset.like));
+  el.querySelectorAll("[data-save]").forEach(b=>b.onclick=()=>toggleSave(b.dataset.save));
+  el.querySelectorAll("[data-toggle-comments]").forEach(b=>b.onclick=()=>{
+    $("#comments-"+b.dataset.toggleComments).classList.toggle("open");
+  });
+  el.querySelectorAll("[data-comment-btn]").forEach(b=>b.onclick=()=>{
+    const pid=b.dataset.commentBtn;
+    const input=el.querySelector(`[data-comment-input="${pid}"]`);
+    addComment(pid, input.value);
+    input.value="";
+  });
+  el.querySelectorAll("[data-open]").forEach(x=>x.onclick=()=>{
+    viewedUserId=x.dataset.open; setView("profile");
+  });
+  el.querySelectorAll("[data-tag]").forEach(t=>t.onclick=()=>{
+    searchQuery=t.dataset.tag; $("#globalSearch").value=searchQuery; setView("feed");
+  });
+  el.querySelectorAll("[data-del]").forEach(x=>x.onclick=()=>deletePost(x.dataset.del));
+  el.querySelectorAll("[data-edit]").forEach(x=>x.onclick=()=>openEdit(x.dataset.edit));
+  el.querySelectorAll("[data-repost]").forEach(x=>x.onclick=()=>repost(x.dataset.repost));
+  el.querySelectorAll("[data-quote]").forEach(x=>x.onclick=()=>openQuote(x.dataset.quote));
+  el.querySelectorAll("[data-dm]").forEach(x=>x.onclick=()=>{
+    const t=getOrCreateThread([x.dataset.dm], "", false);
+    activeThreadId=t.id; setView("messages"); renderMessages();
+  });
+
+  return el;
+}
+
+function renderFeed(){
+  const me=currentUser();
+  let list=posts.filter(p=>canSeePost(p, me.id));
+
+  if(searchQuery){
+    const q=searchQuery.toLowerCase();
+    list=list.filter(p=>{
+      const a=users.find(u=>u.id===p.authorId);
+      return (p.text||"").toLowerCase().includes(q) ||
+             p.tags.some(t=>t.includes(q)) ||
+             a?.username.includes(q) ||
+             a?.name.toLowerCase().includes(q);
+    });
+  }
+
+  if(sortMode==="top") list=list.slice().sort((a,b)=>b.likes.length-a.likes.length);
+  if(sortMode==="mine") list=list.filter(p=>p.authorId===me.id);
+  if(sortMode==="following") list=list.filter(p=>me.following.includes(p.authorId));
+
+  const wrap=$("#feedList");
+  wrap.innerHTML="";
+  if(!list.length){ wrap.innerHTML="<div class='muted'>No posts.</div>"; return; }
+  list.forEach(p=>wrap.appendChild(renderPost(p)));
+}
+
+function renderExplore(){
+  const me=currentUser();
+  let list=posts.filter(p=>p.visibility==="public" && canSeePost(p, me.id));
+  list=list.slice().sort(()=>Math.random()-0.5);
+  const wrap=$("#exploreList");
+  wrap.innerHTML="";
+  if(!list.length){ wrap.innerHTML="<div class='muted'>Nothing here.</div>"; return; }
+  list.forEach(p=>wrap.appendChild(renderPost(p)));
+}
+
+function renderTags(){
+  const freq={};
+  posts.forEach(p=>p.tags.forEach(t=>freq[t]=(freq[t]||0)+1));
+  let items=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  const q=$("#tagSearch").value.toLowerCase().trim();
+  if(q) items=items.filter(([tag])=>tag.includes(q));
+
+  const wrap=$("#tagsList");
+  wrap.innerHTML="";
+  if(!items.length){ wrap.innerHTML="<div class='muted'>No tags found.</div>"; return; }
+
+  items.forEach(([tag,count])=>{
+    const d=document.createElement("div");
+    d.className="trend-item";
+    d.innerHTML=`<span class="tag">${tag}</span><span class="tiny muted">${count} posts</span>`;
+    d.onclick=()=>{ searchQuery=tag; $("#globalSearch").value=tag; setView("feed"); };
+    wrap.appendChild(d);
+  });
+}
+
+function renderPeople(){
+  const me=currentUser();
+  const q=$("#peopleSearch").value.toLowerCase().trim();
+  const list=users.filter(u=>u.id!==me.id).filter(u=>{
+    if(!q) return true;
+    return u.username.includes(q) || u.name.toLowerCase().includes(q);
+  });
+
+  const wrap=$("#peopleList");
+  wrap.innerHTML="";
+  if(!list.length){ wrap.innerHTML="<div class='muted'>No users found.</div>"; return; }
+
+  list.forEach(u=>{
+    const following=me.following.includes(u.id);
+    const d=document.createElement("div");
+    d.className="card"; d.style.padding="8px";
+    d.innerHTML=`
+      <div class="row-between">
+        <div class="row">
+          <div class="avatar sm">${initials(u.name)}</div>
+          <div>
+            <div style="font-weight:800">
+              ${escapeHtml(u.name)} ${u.verified?`<span class="tick">✓</span>`:""}
+              ${u.banned?`<span class="pill">banned</span>`:""}
+            </div>
+            <div class="tiny muted">@${u.username}</div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn mini ${following?"bad":"good"}" data-f="${u.id}">
+            ${following?"Unfollow":"Follow"}
+          </button>
+          <button class="ghost mini" data-open="${u.id}">View</button>
+        </div>
+      </div>
+    `;
+    d.querySelector("[data-f]").onclick=()=>following?unfollow(u.id):follow(u.id);
+    d.querySelector("[data-open]").onclick=()=>{ viewedUserId=u.id; setView("profile"); };
+    wrap.appendChild(d);
+  });
+}
+
+function renderSaved(){
+  const me=currentUser();
+  const list=posts.filter(p=>p.savedBy.includes(me.id) && canSeePost(p, me.id));
+  const wrap=$("#savedList");
+  wrap.innerHTML="";
+  if(!list.length){ wrap.innerHTML="<div class='muted'>Nothing saved.</div>"; return; }
+  list.forEach(p=>wrap.appendChild(renderPost(p)));
+}
+
+function renderProfile(){
+  const me=currentUser();
+  let u=viewedUserId?users.find(x=>x.id===viewedUserId):me;
+  if(!u){ u=me; viewedUserId=null; }
+
+  $("#profileHeader").innerHTML=`
+    <div class="row" style="align-items:center;gap:10px;">
+      <div class="avatar lg">${initials(u.name)}</div>
+      <div style="flex:1;">
+        <div style="font-weight:900;font-size:20px">
+          ${escapeHtml(u.name)} ${u.verified?`<span class="tick">✓</span>`:""}
+        </div>
+        <div class="muted">@${u.username}</div>
+        <div class="tiny muted" style="margin-top:6px">${escapeHtml(u.bio||"No bio.")}</div>
+        <div class="tiny muted" style="margin-top:6px;display:flex;gap:12px">
+          <div>${posts.filter(p=>p.authorId===u.id).length} posts</div>
+          <div>${u.followers.length} followers</div>
+          <div>${u.following.length} following</div>
+        </div>
+      </div>
+      ${
+        u.id===me.id ? "" :
+        me.following.includes(u.id)
+          ? `<button class="btn bad" id="unfollowBtn">Unfollow</button>`
+          : `<button class="btn good" id="followBtn">Follow</button>`
+      }
+    </div>
+  `;
+  const fb=$("#followBtn"); if(fb) fb.onclick=()=>follow(u.id);
+  const ufb=$("#unfollowBtn"); if(ufb) ufb.onclick=()=>unfollow(u.id);
+
+  const wrap=$("#profilePostsList");
+  wrap.innerHTML="";
+  const list=posts.filter(p=>p.authorId===u.id && canSeePost(p, me.id));
+  if(!list.length){ wrap.innerHTML="<div class='muted'>No posts yet.</div>"; return; }
+  list.forEach(p=>wrap.appendChild(renderPost(p)));
+}
+
+function renderMessages(){
+  const me=currentUser();
+  const tl=$("#threadsList");
+  tl.innerHTML="";
+
+  dms.filter(t=>t.members.includes(me.id)).forEach(t=>{
+    const last=t.messages[t.messages.length-1];
+    const title = t.isGroup
+      ? (t.name || "Group Chat")
+      : (()=> {
+          const otherId=t.members.find(id=>id!==me.id);
+          const other=users.find(u=>u.id===otherId);
+          return other?.name || "User";
+        })();
+    const d=document.createElement("div");
+    d.className="thread"+(t.id===activeThreadId?" active":"");
+    d.innerHTML=`
+      <div style="font-weight:900">${escapeHtml(title)}</div>
+      <div class="tiny muted">${t.isGroup? (t.members.length+" members") : ""}</div>
+      <div class="tiny muted">${last?escapeHtml(last.text).slice(0,30):"No messages yet"}</div>
+    `;
+    d.onclick=()=>{ activeThreadId=t.id; renderMessages(); };
+    tl.appendChild(d);
+  });
+
+  const t=dms.find(x=>x.id===activeThreadId);
+  const cb=$("#chatBox");
+  if(!t){
+    $("#chatHeader").textContent="No chat selected";
+    cb.innerHTML="";
+    return;
+  }
+
+  const headerTitle = t.isGroup
+    ? (t.name || "Group Chat")
+    : (()=> {
+        const otherId=t.members.find(id=>id!==me.id);
+        const other=users.find(u=>u.id===otherId);
+        return "Chat with "+(other?.name||"User");
+      })();
+  $("#chatHeader").textContent = headerTitle;
+
+  cb.innerHTML="";
+  t.messages.forEach(m=>{
+    const fromUser=users.find(u=>u.id===m.from);
+    const b=document.createElement("div");
+    b.className="bubble"+(m.from===me.id?" me":"");
+    b.innerHTML=`
+      ${t.isGroup && m.from!==me.id ? `<div class="tiny muted"><b>${escapeHtml(fromUser?.name||"User")}</b></div>`:""}
+      ${escapeHtml(m.text)}
+      <div class="tiny muted">${timeAgo(m.createdAt)}</div>
+    `;
+    cb.appendChild(b);
+  });
+  cb.scrollTop=cb.scrollHeight;
+}
+
+function renderNotifications(){
+  const me=currentUser();
+  const list=me.notifications||[];
+  const wrap=$("#notifList");
+  wrap.innerHTML="";
+  if(!list.length){ wrap.innerHTML="<div class='muted'>No notifications.</div>"; return; }
+
+  list.forEach(n=>{
+    const by=users.find(u=>u.id===n.payload?.by);
+    const byName=by?.name||"Someone";
+    let text="Notification";
+
+    if(n.type==="like") text=`❤️ ${byName} liked your post`;
+    if(n.type==="comment") text=`💬 ${byName} commented: "${n.payload.text}"`;
+    if(n.type==="follow") text=`➕ ${byName} followed you`;
+    if(n.type==="mention") text=`📣 ${byName} mentioned you`;
+    if(n.type==="broadcast") text=`📣 ADMIN: ${n.payload.text}`;
+
+    const d=document.createElement("div");
+    d.className="card"; d.style.padding="8px";
+    d.innerHTML=`
+      <div style="font-weight:800">${escapeHtml(text)}</div>
+      <div class="tiny muted">${timeAgo(n.createdAt)}</div>
+    `;
+    wrap.appendChild(d);
+    n.read=true;
+  });
+  persist();
+}
+
+function renderSuggestions(){
+  const me=currentUser();
+  const list=users.filter(u=>u.id!==me.id && !me.following.includes(u.id))
+                  .filter(u=>!u.banned)
+                  .sort(()=>Math.random()-0.5).slice(0,6);
+  const wrap=$("#suggestList");
+  wrap.innerHTML="";
+  list.forEach(u=>{
+    const d=document.createElement("div");
+    d.className="card"; d.style.padding="8px";
+    d.innerHTML=`
+      <div class="row-between">
+        <div class="row">
+          <div class="avatar sm">${initials(u.name)}</div>
+          <div>
+            <div style="font-weight:800;font-size:13px">
+              ${escapeHtml(u.name)} ${u.verified?`<span class="tick">✓</span>`:""}
+            </div>
+            <div class="tiny muted">@${u.username}</div>
+          </div>
+        </div>
+        <button class="btn good mini" data-f="${u.id}">Follow</button>
+      </div>
+    `;
+    d.querySelector("[data-f]").onclick=()=>follow(u.id);
+    d.onclick=(e)=>{ if(e.target.tagName!=="BUTTON"){ viewedUserId=u.id; setView("profile"); } };
+    wrap.appendChild(d);
+  });
+}
+
+function renderAdmin(){
+  const me=currentUser();
+  if(!me.isAdmin) return;
+
+  const userWrap=$("#adminUsers");
+  userWrap.innerHTML="";
+  users.forEach(u=>{
+    const d=document.createElement("div");
+    d.className="card"; d.style.padding="8px";
+    d.innerHTML=`
+      <div class="row-between">
+        <div>
+          <div style="font-weight:900">
+            ${escapeHtml(u.name)} ${u.verified?`<span class="tick">✓</span>`:""}
+            ${u.isAdmin?`<span class="pill">admin</span>`:""}
+            ${u.banned?`<span class="pill">banned</span>`:""}
+          </div>
+          <div class="tiny muted">@${u.username}</div>
+        </div>
+        <div class="row">
+          <button class="btn mini ${u.verified?"warn":"good"}" data-v="${u.id}">
+            ${u.verified?"Unverify":"Verify"}
+          </button>
+          <button class="btn mini ${u.banned?"good":"bad"}" data-b="${u.id}">
+            ${u.banned?"Unban":"Ban"}
+          </button>
+        </div>
+      </div>
+    `;
+    d.querySelector("[data-v]").onclick=()=>adminToggleVerify(u.id);
+    d.querySelector("[data-b]").onclick=()=>adminToggleBan(u.id);
+    userWrap.appendChild(d);
+  });
+
+  const postWrap=$("#adminPosts");
+  postWrap.innerHTML="";
+  posts.forEach(p=>{
+    const a=users.find(u=>u.id===p.authorId);
+    const d=document.createElement("div");
+    d.className="card"; d.style.padding="8px";
+    d.innerHTML=`
+      <div class="row-between">
+        <div>
+          <div class="tiny muted">by @${a?.username||"user"} • ${timeAgo(p.createdAt)}</div>
+          <div>${escapeHtml((p.text||"").slice(0,120))}</div>
+        </div>
+        <button class="btn bad mini" data-del="${p.id}">Delete</button>
+      </div>
+    `;
+    d.querySelector("[data-del]").onclick=()=>deletePost(p.id);
+    postWrap.appendChild(d);
+  });
+}
+
+function renderAll(){
+  renderMe();
+  renderTrending();
+  renderSuggestions();
+  if(view==="feed") renderFeed();
+  if(view==="explore") renderExplore();
+  if(view==="hashtags") renderTags();
+  if(view==="people") renderPeople();
+  if(view==="saved") renderSaved();
+  if(view==="profile") renderProfile();
+  if(view==="messages") renderMessages();
+  if(view==="notifications") renderNotifications();
+  if(view==="admin") renderAdmin();
+}
+
+/* ===== Theme / Settings ===== */
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", theme);
+  $("#themeToggle").textContent = theme==="dark"?"🌙":"☀️";
+}
+function openSettings(show){
+  $("#settingsBackdrop").classList.toggle("hidden", !show);
+}
+
+/* ===== Seed demo ===== */
+function seedIfEmpty(){
+  if(users.length) return;
+  const a=signup("You (Admin)","admin","1234","I own Pulse+++.");
+  signup("Maya Chen","maya","1234","Coffee + coding.");
+  signup("Sam K.","sam","1234","Traveling.");
+  session={userId:a.id};
+  posts=[];
+  persist();
+}
+
+/* ===== Events ===== */
+function wireEvents(){
+  $$(".navbtn").forEach(b=>b.onclick=()=>setView(b.dataset.view));
+
+  $("#postText").addEventListener("input", ()=>{
+    $("#charCount").textContent=`${$("#postText").value.length}/280`;
+  });
+
+  $("#imageFile").addEventListener("change", (e)=>{
+    const file=e.target.files?.[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{ $("#imageUrl").value=reader.result; toast("Image loaded"); };
+    reader.readAsDataURL(file);
+  });
+
+  $("#postBtn").onclick=()=>{
+    const res=createPost({
+      text:$("#postText").value,
+      imageUrl:$("#imageUrl").value,
+      videoUrl:$("#videoUrl").value,
+      visibility:$("#visibility").value,
+      mood:$("#mood").value
+    });
+    if(typeof res==="string") return toast(res);
+    $("#postText").value="";
+    $("#imageUrl").value="";
+    $("#videoUrl").value="";
+    $("#mood").value="";
+    $("#charCount").textContent="0/280";
+    toast("Posted!");
+    renderAll();
+  };
+
+  $("#sortFeed").onchange=()=>{ sortMode=$("#sortFeed").value; renderAll(); };
+
+  $("#globalSearch").addEventListener("input", ()=>{
+    searchQuery=$("#globalSearch").value.trim();
+    renderAll();
+  });
+  $("#clearSearch").onclick=()=>{
+    searchQuery=""; $("#globalSearch").value=""; renderAll();
+  };
+
+  $("#tagSearch").addEventListener("input", renderTags);
+  $("#peopleSearch").addEventListener("input", renderPeople);
+
+  $("#cancelEdit").onclick=()=>{ editingPostId=null; $("#editBackdrop").classList.add("hidden"); };
+  $("#saveEdit").onclick=saveEdit;
+
+  $("#cancelQuote").onclick=()=>{ quotingPostId=null; $("#quoteBackdrop").classList.add("hidden"); };
+  $("#doQuote").onclick=doQuote;
+
+  $("#editProfileBtn").onclick=()=>{
+    const me=currentUser();
+    me.name=(prompt("Display name:", me.name)||me.name).trim();
+    me.bio=(prompt("Bio:", me.bio)||me.bio).trim();
+    persist(); renderAll(); toast("Profile updated");
+  };
+
+  $("#themeToggle").onclick=()=>{
+    theme=theme==="dark"?"light":"dark";
+    applyTheme(); persist();
+  };
+
+  $("#openSettings").onclick=()=>openSettings(true);
+  $("#closeSettings").onclick=()=>openSettings(false);
+
+  $("#settingDensity").value=settings.density;
+  $("#settingDensity").onchange=()=>{
+    settings.density=$("#settingDensity").value;
+    document.documentElement.style.setProperty("--post-gap", settings.density==="compact"?"6px":"10px");
+    persist(); renderAll();
+  };
+
+  $("#resetApp").onclick=()=>{
+    if(confirm("Reset everything?")){
+      Object.values(KEYS).forEach(k=>localStorage.removeItem(k));
+      location.reload();
+    }
+  };
+
+  $("#sendChatBtn").onclick=sendDm;
+  $("#chatInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") sendDm(); });
+
+  $("#newDmBtn").onclick=()=>{
+    const me=currentUser();
+    const otherName=prompt("Type username to DM (example: maya)");
+    if(!otherName) return;
+    const other=users.find(u=>u.username===otherName.toLowerCase() && u.id!==me.id);
+    if(!other) return toast("User not found");
+    if(other.banned) return toast("That user is banned");
+    const t=getOrCreateThread([other.id], "", false);
+    activeThreadId=t.id; setView("messages"); renderMessages();
+  };
+
+  $("#newGroupBtn").onclick=()=>{
+    const gname=prompt("Group name:");
+    if(!gname) return;
+    const membersText=prompt("Add members by username, comma separated:\nexample: maya, sam");
+    const names=(membersText||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    const ids=[];
+    names.forEach(n=>{
+      const u=users.find(x=>x.username===n);
+      if(u && !u.banned) ids.push(u.id);
+    });
+    if(!ids.length) return toast("No valid members added");
+    const t=getOrCreateThread(ids, gname, true);
+    activeThreadId=t.id;
+    setView("messages");
+    renderMessages();
+    toast("Group created!");
+  };
+
+  $("#markAllRead").onclick=()=>{
+    const me=currentUser();
+    (me.notifications||[]).forEach(n=>n.read=true);
+    persist(); renderNotifications(); toast("Marked read");
+  };
+
+  $("#broadcastBtn").onclick=adminBroadcast;
+  $("#logoutBtn").onclick=()=>{ session=null; persist(); location.reload(); };
+
+  $$(".tab").forEach(t=>t.onclick=()=>{
+    $$(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const tab=t.dataset.tab;
+    $("#loginTab").classList.toggle("hidden", tab!=="login");
+    $("#signupTab").classList.toggle("hidden", tab!=="signup");
+  });
+
+  $("#loginBtn").onclick=()=>{
+    const res=login($("#loginUser").value, $("#loginPass").value);
+    if(res==="banned") return toast("You are banned.");
+    if(res!==true) return toast("Wrong username or password");
+    showAuth(false); boot();
+  };
+  $("#signupBtn").onclick=()=>{
+    const u=signup($("#signupName").value, $("#signupUser").value, $("#signupPass").value, $("#signupBio").value);
+    if(typeof u==="string") return toast(u);
+    session={userId:u.id}; persist();
+    showAuth(false); boot(); toast("Account created!");
+  };
+}
+
+function boot(){
+  applyTheme();
+  document.documentElement.style.setProperty("--post-gap", settings.density==="compact"?"6px":"10px");
+  if(!session){ showAuth(true); return; }
+  showAuth(false);
+  setView("feed");
+  renderAll();
+}
+
+seedIfEmpty();
+wireEvents();
+boot();
+</script>
+</body>
+</html>
